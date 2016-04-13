@@ -1,0 +1,4 @@
+Track 0 is the "conductor track" and contains tempo / probably other control
+updates, key signature, time signature.
+Track 1 is "system setup", we can probably ignore it.
+
