@@ -39,7 +39,7 @@ def findNoteOff(eventList, chanNum, pitch, startIndex):
       noteOffPitch = event.midi_buffer[1]
       if noteOffChanNum == chanNum and noteOffPitch == pitch:
         return event
-  raise Exception("Paired NOTE-OFF signal not found")
+  return None
 
 def getNotes(filename):
 
@@ -52,9 +52,16 @@ def getNotes(filename):
 
   notes = []
 
+  trackNum = 0
+
   for track in f.tracks:
+    trackNum += 1
+    print "Processing track %d (%d events)..." % (trackNum, len(track.events))
+    noteNum = 0
     # for every track, we want to get all of the note ons
     for i in xrange(len(track.events)):
+      noteNum += 1
+      sys.stdout.write("Processing event %d...\r" % noteNum)
       event = track.events[i]
       # check if each event is a note on
       (isNoteOn, chanNum) = checkNoteOn(event)
@@ -65,10 +72,13 @@ def getNotes(filename):
         #print "Note on, pitch %d, velocity %d, at time %f" \
         #  % (pitch, velocity, eventTime)
         noteOffEvent = findNoteOff(track.events, chanNum, pitch, i)
+        if noteOffEvent is None:
+          duration = 1
         #print "Corresponding note off: pitch %d at time %f" \
         #  % (noteOffEvent.midi_buffer[1], noteOffEvent.time_seconds)
 
-        duration = noteOffEvent.time_seconds - event.time_seconds
+        else: 
+          duration = noteOffEvent.time_seconds - event.time_seconds
 
         note = Note(pitch, chanNum, velocity, duration, eventTime)
 
