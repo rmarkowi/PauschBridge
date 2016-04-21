@@ -21,10 +21,31 @@ class Note:
     self.startTime = startTime
     # MIDI "velocity" (pretty much means volume)
     self.velocity = velocity
+    self.density = 0
 
   def __str__(self):
     return "Channel %d, note %d, velocity %d, length %f, start time %f" \
     % (self.channelNumber, self.pitch, self.velocity, self.duration, self.startTime)
+
+def computeNoteDensity(noteList):
+	for i in xrange(len(noteList)):
+		currentNote = noteList[i]
+		density = 0
+		for j in reversed(xrange(i)):
+			otherNote = noteList[j]
+			timeDiff = currentNote.startTime - otherNote.startTime
+			if timeDiff > 1:
+				break
+			factor = 1 - timeDiff
+			density += factor
+		for j in xrange(i, len(noteList)):
+			otherNote = noteList[j]
+			timeDiff = otherNote.startTime - currentNote.startTime
+			if timeDiff > 1:
+				break
+			factor = 1 - timeDiff
+			density += factor
+		currentNote.density = density
 
 class StreamerThread(Thread):
 
@@ -77,6 +98,7 @@ class MidiStreamer:
     self.notes = readNoteList(filename)
     self.time = 0
     self.streamingThread = None
+    computeNoteDensity(self.notes)
 
   # Begins a thread that will call the supplied function callbackFn
   # with the next notes in the MIDI file at each note's start time,
