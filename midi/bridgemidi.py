@@ -2,6 +2,10 @@ import sys
 import signal
 from threading import Thread
 import time
+import OSC
+
+client = OSC.OSCClient()
+client.connect(('127.0.0.1', 9001))
 
 def signalHandler(signal, frame):
 	print "Ctrl-C received, exiting."
@@ -67,6 +71,16 @@ def readNoteList(filename):
 			notes.append(Note(pitch, chanNum, velocity, duration, startTime))
 	return notes
 
+def midiToOsc(note):
+        msg = OSC.OSCMessage()
+        msg.setAddress("/1")
+        msg.append(note.pitch)
+        msg.append(note.channelNumber)
+        msg.append(note.duration)
+        msg.append(note.startTime)
+        msg.append(note.velocity)
+        client.send(msg)
+        
 class MidiStreamer:
   """
   A class that will "play back" the notes of a MIDI file in real time,
@@ -105,7 +119,7 @@ if __name__ == "__main__":
   # using the filename of the midi notelist you want to use
   streamer = MidiStreamer(filename)
 
-  # Define a callback function -- this is a function that the streamer
+  """# Define a callback function -- this is a function that the streamer
   # will call each time it gets a new note. The argument to this function
   # needs to be an object of the Note class I've defined above.
   # For the bridge, this function probably does something like changing
@@ -118,4 +132,6 @@ if __name__ == "__main__":
   # This is here just in case the main program doesn't have anything else to do,
   # since if the main thread terminates, then the entire thing will end.
   # No need to use this if the main thread goes on to execute a different loop.
+  streamer.waitToFinish()"""
+  streamer.streamNotesRealTime(midiToOsc)
   streamer.waitToFinish()

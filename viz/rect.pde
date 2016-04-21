@@ -10,7 +10,7 @@ class Panel{
   void update(){
     int currentTime = millis();
     if(currentTime < endTime){
-      int newAlpha = int(map(currentTime, startTime, endTime, 255, 0));
+      int newAlpha = int(map(currentTime, startTime, endTime, 255, 0));  
       col = color(hue(col), saturation(col), brightness(col), newAlpha);
     }
     pushStyle();
