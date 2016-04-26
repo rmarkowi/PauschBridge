@@ -19,7 +19,7 @@ int songStartTime = -1;
 
 void setup(){
   fullScreen();
-  colorMode(HSB, 360, 255, 255, 255);
+  colorMode(RGB, 255, 255, 255);
   background(0, 0, 0);
   
   osc = new OscP5(this, port);
@@ -29,7 +29,7 @@ void setup(){
     line(i, 0, i, (height / panelHeight));
   }
   for(int panel = 1; panel <= (numPanels + numVocals); panel++){
-    panels[panel - 1] = new Panel(panel, color(0,0,0,0));
+    panels[panel - 1] = new Panel(panel);
   }
 }
 

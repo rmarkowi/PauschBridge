@@ -1,22 +1,18 @@
 class Panel{
   int panelNum;
-  color col;
-  float startTime = 0;
-  float endTime = 0;
-  Panel(int a, color b){
+  int r = 0;
+  int g = 0;
+  int b = 0;
+  color c;
+  Panel(int a){
     panelNum = a;
-    col = b;
   }
   void update(){
-    int currentTime = millis();
-    if(currentTime < endTime){
-      int newAlpha = int(map(currentTime, startTime, endTime, 255, 0));  
-      col = color(hue(col), saturation(col), brightness(col), newAlpha);
-    }
     pushStyle();
-      stroke(0, 0, 255, 255);
+      stroke(255, 255, 255);
       strokeWeight(1);
-      fill(col);
+      c = color(r, g, b);
+      fill(c);
       int startX;
       int startY;
       int endX;
