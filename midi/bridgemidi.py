@@ -8,13 +8,13 @@ client = OSC.OSCClient()
 client.connect(('127.0.0.1', 9001))
 
 def signalHandler(signal, frame):
-	print "Ctrl-C received, exiting."
-	sys.exit(0)
+  print "Ctrl-C received, exiting."
+  sys.exit(0)
 
 signal.signal(signal.SIGINT, signalHandler)
 
 class Note:
-  def __init__(self, pitch, chanNum, velocity, lengthSeconds, startTime):
+  def __init__(self, pitch, chanNum, velocity, lengthSeconds, startTime, trackNum):
     # MIDI pitch, an integer from 0 to 127
     self.pitch = pitch
     # MIDI channel number, integer from 0 to 15
@@ -25,31 +25,32 @@ class Note:
     self.startTime = startTime
     # MIDI "velocity" (pretty much means volume)
     self.velocity = velocity
+    self.trackNumber = trackNum
     self.density = 0
 
   def __str__(self):
     return "Channel %d, note %d, velocity %d, length %f, start time %f" \
-    % (self.channelNumber, self.pitch, self.velocity, self.duration, self.startTime)
+    % (self.channelNumber, self.pitch, self.velocity, self.duration, self.startTime, self.trackNumber)
 
 def computeNoteDensity(noteList):
-	for i in xrange(len(noteList)):
-		currentNote = noteList[i]
-		density = 0
-		for j in reversed(xrange(i)):
-			otherNote = noteList[j]
-			timeDiff = currentNote.startTime - otherNote.startTime
-			if timeDiff > 1:
-				break
-			factor = 1 - timeDiff
-			density += factor
-		for j in xrange(i, len(noteList)):
-			otherNote = noteList[j]
-			timeDiff = otherNote.startTime - currentNote.startTime
-			if timeDiff > 1:
-				break
-			factor = 1 - timeDiff
-			density += factor
-		currentNote.density = density
+  for i in xrange(len(noteList)):
+    currentNote = noteList[i]
+    density = 0
+    for j in reversed(xrange(i)):
+      otherNote = noteList[j]
+      timeDiff = currentNote.startTime - otherNote.startTime
+      if timeDiff > 1:
+        break
+      factor = 1 - timeDiff
+      density += factor
+    for j in xrange(i, len(noteList)):
+      otherNote = noteList[j]
+      timeDiff = otherNote.startTime - currentNote.startTime
+      if timeDiff > 1:
+        break
+      factor = 1 - timeDiff
+      density += factor
+    currentNote.density = density
 
 class StreamerThread(Thread):
 
@@ -80,28 +81,31 @@ class StreamerThread(Thread):
     self.done = True
 
 def readNoteList(filename):
-	notes = []
-	with open(filename, 'r') as inFile:
-		for line in inFile:
-			numbers = map(lambda x: x.strip(), line.split(' '))
-			pitch = int(numbers[0])
-			chanNum = int(numbers[1])
-			duration = float(numbers[2])
-			startTime = float(numbers[3])
-			velocity = int(numbers[4])
-			notes.append(Note(pitch, chanNum, velocity, duration, startTime))
-	return notes
+  notes = []
+  with open(filename, 'r') as inFile:
+    for line in inFile:
+      numbers = map(lambda x: x.strip(), line.split(' '))
+      pitch = int(numbers[0])
+      chanNum = int(numbers[1])
+      duration = float(numbers[2])
+      startTime = float(numbers[3])
+      velocity = int(numbers[4])
+      trackNum = int(numbers[5])
+      notes.append(Note(pitch, chanNum, velocity, duration, startTime, trackNum))
+  return notes
 
 def midiToOsc(note):
-        msg = OSC.OSCMessage()
-        msg.setAddress("/1")
-        msg.append(note.pitch)
-        msg.append(note.channelNumber)
-        msg.append(note.duration)
-        msg.append(note.startTime)
-        msg.append(note.velocity)
-        client.send(msg)
-        
+  msg = OSC.OSCMessage()
+  print "send"
+  msg.setAddress("/1")
+  msg.append(note.pitch)
+  msg.append(note.channelNumber)
+  msg.append(note.duration)
+  msg.append(note.startTime)
+  msg.append(note.velocity)
+  msg.append(note.trackNumber)
+  client.send(msg)
+
 class MidiStreamer:
   """
   A class that will "play back" the notes of a MIDI file in real time,

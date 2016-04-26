@@ -55,7 +55,7 @@ def getNotes(filename):
   trackNum = 0
 
   for track in f.tracks:
-    trackNum += 1
+    trackNum = track.track_number
     print "Processing track %d (%d events)..." % (trackNum, len(track.events))
     noteNum = 0
     # for every track, we want to get all of the note ons
@@ -80,7 +80,7 @@ def getNotes(filename):
         else: 
           duration = noteOffEvent.time_seconds - event.time_seconds
 
-        note = Note(pitch, chanNum, velocity, duration, eventTime)
+        note = Note(pitch, chanNum, velocity, duration, eventTime, trackNum)
 
         notes.append(note)
 
@@ -91,7 +91,7 @@ def getNotes(filename):
 def writeNotes(noteList, filename):
   with open(filename, 'w') as out:
     for note in notes:
-      noteString = "%d %d %f %f %d\n" % (note.pitch, note.channelNumber, note.duration, note.startTime, note.velocity)
+      noteString = "%d %d %f %f %d %d\n" % (note.pitch, note.channelNumber, note.duration, note.startTime, note.velocity, note.trackNumber)
       out.write(noteString)
 
 # Look here for example usage.
