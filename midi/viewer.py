@@ -77,6 +77,7 @@ class Viewer:
         glutPostRedisplay()
 
     def idlefunc(self):
+        """
         currentTime = time.time()
         elapsed = currentTime - self.lastTime
         factor = 1 / math.pow(2, FALLOFF_RATE * elapsed)
@@ -89,7 +90,7 @@ class Viewer:
 
         map(lambda c: falloff(c), self.panelColors)
         self.lastTime = currentTime
-
+        """
         glutPostRedisplay()
 
     def redraw(self, clearColor=(0.2, 0.2, 0.2, 0), fill=False):
@@ -145,6 +146,9 @@ class Viewer:
         glutInitWindowSize(self.windowWidth, self.windowHeight)
         glutInitWindowPosition(200, 200)
         glutCreateWindow("Something")
+
+    def setPanelColor(self, num, r, g, b):
+        self.panelColors[num] = [r / 255, g / 255, b / 255]
 
     def setPanelFromNote(self, note):
         noteNum = note.pitch - LOWEST_NOTE

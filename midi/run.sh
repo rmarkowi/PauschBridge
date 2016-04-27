@@ -1,3 +1,2 @@
-python viewer.py $1 &
-sleep 0.2
+python bridgemidi.py $1 $3 &
 play $2

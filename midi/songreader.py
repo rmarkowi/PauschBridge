@@ -86,9 +86,9 @@ def getNotes(filename):
 
   notes.sort(key=lambda n: n.startTime)
 
-  return notes
+  return (notes, f.number_of_tracks)
 
-def writeNotes(noteList, filename):
+def writeNotes(noteList, numTracks, filename):
   with open(filename, 'w') as out:
     for note in notes:
       noteString = "%d %d %f %f %d %d\n" % (note.pitch, note.channelNumber, note.duration, note.startTime, note.velocity, note.trackNumber)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
   # In order to use this stuff, first create a MidiStreamer
   # using the filename of the midi you want to use
-  notes = getNotes(filename)
+  notes, numTracks = getNotes(filename)
 
   outFile = "%s.notelist" % filename
-  writeNotes(notes, outFile)
+  writeNotes(notes, numTracks, outFile)

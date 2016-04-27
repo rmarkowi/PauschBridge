@@ -1,8 +1,14 @@
+from __future__ import division
+
 import sys
 import signal
 from threading import Thread
 import time
 import OSC
+import math
+
+numTracks = 0
+minTrack = 100
 
 client = OSC.OSCClient()
 client.connect(('127.0.0.1', 9001))
@@ -81,7 +87,11 @@ class StreamerThread(Thread):
     self.done = True
 
 def readNoteList(filename):
+  global numTracks
+  global minTrack
   notes = []
+  numTracks = 0
+  trackSet = set()
   with open(filename, 'r') as inFile:
     for line in inFile:
       numbers = map(lambda x: x.strip(), line.split(' '))
@@ -91,7 +101,11 @@ def readNoteList(filename):
       startTime = float(numbers[3])
       velocity = int(numbers[4])
       trackNum = int(numbers[5])
+      minTrack = min(trackNum, minTrack)
+      trackSet.add(trackNum)
       notes.append(Note(pitch, chanNum, velocity, duration, startTime, trackNum))
+  numTracks = len(trackSet)
+  print numTracks
   return notes
 
 def hsvToRgb(h, s, v):
@@ -115,19 +129,38 @@ def hsvToRgb(h, s, v):
 
   m = v - c
   (r, g, b) = (r1 + m, g1 + m, b1 + m)
-  return (r, g, b)
+  return (int(r * 255), int(g * 255), int(b * 255))
+
+def noteToRgb(note):
+  hue = 360 * ((note.trackNumber - minTrack) / numTracks)
+  # Cycle around the color wheel once per 120 seconds
+  hueOffset = math.fmod(note.startTime * 3, 360)
+  hue = math.fmod(hue + hueOffset, 360)
+  saturation = min(1, note.duration)
+  value = note.velocity / 127
+  return hsvToRgb(hue, saturation, value)
 
 def midiToOsc(note):
+  global numTracks
   msg = OSC.OSCMessage()
-  print "send"
   msg.setAddress("/1")
 
+  (r,g,b) = noteToRgb(note)
+
+  msg.append(r)
+  msg.append(g)
+  msg.append(b)
+  msg.append(note.duration)
+  msg.append(note.pitch)
+
+  """
   msg.append(note.pitch)
   msg.append(note.channelNumber)
   msg.append(note.duration)
   msg.append(note.startTime)
   msg.append(note.velocity)
   msg.append(note.trackNumber)
+  """
   client.send(msg)
 
 class MidiStreamer:
@@ -159,10 +192,13 @@ class MidiStreamer:
 
 # Look here for example usage.
 if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    print "usage: python bridgemidi.py <midi file>"
+  if len(sys.argv) != 3:
+    print "usage: python bridgemidi.py <midi file> <wait time>"
     exit()
 
+
+  waitTime = float(sys.argv[2])
+  time.sleep(waitTime)
   filename = sys.argv[1]
 
   # In order to use this stuff, first create a MidiStreamer
