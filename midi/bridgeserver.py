@@ -80,7 +80,7 @@ class LightArray:
       self.panelColors.append(FalloffColor())
     self.lastTime = time.time()
 
-  def advectLights(self, delta):
+  def advectLights_Heat(self, delta):
     diffs = []
     for i in xrange(len(self.panelColors)):
       center = self.panelColors[i]
@@ -103,7 +103,7 @@ class LightArray:
     currentTime = time.time()
     elapsed = currentTime - self.lastTime
 
-    self.advectLights(elapsed)
+    self.advectLights_Heat(elapsed)
 
     for fColor in self.panelColors:
       fColor.falloff(elapsed)
@@ -133,7 +133,7 @@ class RequestThread(Thread):
 
   def run(self):
     while True:
-      time.sleep(0.01)
+      time.sleep(0.001)
       handle_stuff(s)
 
 if __name__ == "__main__":
