@@ -2,7 +2,7 @@ import smf
 import sys
 import signal
 from threading import Thread
-from bridgemidi import Note
+from SendMidi import Note
 import time
 
 def signalHandler(signal, frame):

@@ -136,8 +136,8 @@ def noteToRgb(note):
   # Cycle around the color wheel once per 120 seconds
   hueOffset = math.fmod(note.startTime * 3, 360)
   hue = math.fmod(hue + hueOffset, 360)
-  saturation = min(1, note.duration)
-  value = note.velocity / 127
+  value = (note.velocity / 127)
+  saturation = min(1, note.duration * 2)
   return hsvToRgb(hue, saturation, value)
 
 def midiToOsc(note):

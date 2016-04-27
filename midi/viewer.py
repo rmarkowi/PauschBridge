@@ -13,7 +13,7 @@ from OpenGL.GLUT import *
 from camera import Camera
 import math
 from time import time, clock
-from bridgemidi import *
+from SendMidi import *
 import sys
 from random import randint
 

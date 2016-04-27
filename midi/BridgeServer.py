@@ -8,6 +8,7 @@ import math
 NUM_PANELS = 59
 LOWEST_NOTE = 30
 FALLOFF_RATE = 3
+BASE_COLOR = 50
 
 lights = None
 
@@ -48,9 +49,9 @@ class FalloffColor:
 
   def falloff(self, elapsed):
     factor = 1 / math.pow(2, self.falloffRate * elapsed)
-    self.r *= factor
-    self.g *= factor
-    self.b *= factor
+    self.r = (self.r - BASE_COLOR) * factor + BASE_COLOR
+    self.g = (self.g - BASE_COLOR) * factor + BASE_COLOR
+    self.b = (self.b - BASE_COLOR) * factor + BASE_COLOR
 
 def laplaceDiff(tup1, tup2, center):
   return (tup1[0] + tup2[0] - 2 * center[0],
@@ -78,12 +79,12 @@ class LightArray:
       center = self.panelColors[i]
       centerColor = (center.r, center.g, center.b, center.falloffRate)
       if i == 0:
-        leftColor = (0, 0, 0, 1)
+        leftColor = (BASE_COLOR, 0, 0, 1)
       else:
         left = self.panelColors[i-1]
         leftColor = (left.r, left.g, left.b, left.falloffRate)
       if i == NUM_PANELS - 1:
-        rightColor = (0, 0, 0, 1)
+        rightColor = (0, 0, BASE_COLOR, 1)
       else:
         right = self.panelColors[i+1]
         rightColor = (right.r, right.g, right.b, right.falloffRate)
