@@ -133,7 +133,7 @@ class RequestThread(Thread):
 
   def run(self):
     while True:
-      time.sleep(0.001)
+      time.sleep(0.01)
       handle_stuff(s)
 
 if __name__ == "__main__":
@@ -147,8 +147,8 @@ if __name__ == "__main__":
   while view is None:
     pass
 
-  s = OSC.OSCServer(('127.0.0.1', 9001))  # listen on localhost, port 57120
-  s.addMsgHandler('/1', handler)     # call handler() for OSC messages received with the /startup address
+  s = OSC.OSCServer(('127.0.0.1', 9001))
+  s.addMsgHandler('/1', handler)
 
   print "Started server"
 

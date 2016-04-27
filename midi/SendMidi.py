@@ -79,7 +79,7 @@ class StreamerThread(Thread):
       nextNote = self.noteList[i]
       while elapsed < nextNote.startTime:
         elapsed = self.elapsedTime()
-        time.sleep(0.001)
+        time.sleep(0.005)
         # spin here because lazy
         pass
       self.callbackFn(nextNote)
