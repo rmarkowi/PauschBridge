@@ -10,8 +10,7 @@ import math
 numTracks = 0
 minTrack = 100
 
-client = OSC.OSCClient()
-client.connect(('127.0.0.1', 9001))
+client = None
 
 def signalHandler(signal, frame):
   print "Ctrl-C received, exiting."
@@ -142,6 +141,7 @@ def noteToRgb(note):
 
 def midiToOsc(note):
   global numTracks
+  global client
   msg = OSC.OSCMessage()
   msg.setAddress("/1")
 
@@ -192,10 +192,16 @@ class MidiStreamer:
 
 # Look here for example usage.
 if __name__ == "__main__":
-  if len(sys.argv) != 3:
-    print "usage: python bridgemidi.py <midi file> <wait time>"
+  if len(sys.argv) != 4:
+    print "usage: python bridgemidi.py <midi file> <wait time> <address>"
     exit()
 
+  address = sys.argv[3]
+
+  client = OSC.OSCClient()
+  client.connect((address, 5724))
+
+  print client
 
   waitTime = float(sys.argv[2])
   time.sleep(waitTime)
@@ -205,19 +211,21 @@ if __name__ == "__main__":
   # using the filename of the midi notelist you want to use
   streamer = MidiStreamer(filename)
 
-  """# Define a callback function -- this is a function that the streamer
-  # will call each time it gets a new note. The argument to this function
-  # needs to be an object of the Note class I've defined above.
-  # For the bridge, this function probably does something like changing
-  # the color of a panel based on what note it gets.
-  def printNote(note):
-    print note
+  """
+  while True:
+    time.sleep(0.5)
+    msg = OSC.OSCMessage()
+    msg.setAddress("/1")
 
-  # Call streamNotesRealTime with the argument as the function you just defined.
-  streamer.streamNotesRealTime(printNote)
-  # This is here just in case the main program doesn't have anything else to do,
-  # since if the main thread terminates, then the entire thing will end.
-  # No need to use this if the main thread goes on to execute a different loop.
-  streamer.waitToFinish()"""
+    msg.append(1)
+    msg.append(1)
+    msg.append(1)
+    msg.append(1)
+    msg.append(61)
+    print msg
+
+    client.send(msg)
+  """
+
   streamer.streamNotesRealTime(midiToOsc)
   streamer.waitToFinish()

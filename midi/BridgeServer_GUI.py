@@ -43,6 +43,7 @@ def handler(addr, tags, data, client_address):
   lights.panelColors[panelNum].g = g
   lights.panelColors[panelNum].b = b
   lights.panelColors[panelNum].falloffRate = 1 / (10 * duration)
+  print "received %s" % str(data)
 
 def sendLightsToViewer(lightarray, view):
   for i in xrange(len(lightarray.panelColors)):
@@ -81,7 +82,7 @@ if __name__ == "__main__":
   while view is None:
     pass
 
-  s = OSC.OSCServer(('127.0.0.1', 9001))
+  s = OSC.OSCServer(('127.0.0.1', 5724))
   s.addMsgHandler('/1', handler)
 
   print "Started server"
