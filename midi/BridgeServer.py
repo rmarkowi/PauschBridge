@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
   lights = LightArray()
 
-  s = OSC.OSCServer(('localhost', 9001))
+  s = OSC.OSCServer(('pbridge.adm.cs.cmu.edu', 5724))
   s.addMsgHandler('/1', handler)
 
   print "Started server"
