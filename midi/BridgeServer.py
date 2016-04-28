@@ -5,7 +5,10 @@ import time
 import OSC
 import math
 
-NUM_PANELS = 59
+import lumiversepython as L
+
+
+NUM_PANELS = 58
 LOWEST_NOTE = 30
 FALLOFF_RATE = 3
 BASE_COLOR = 50
@@ -38,6 +41,7 @@ def handler(addr, tags, data, client_address):
   lights.panelColors[panelNum].g = g
   lights.panelColors[panelNum].b = b
   lights.panelColors[panelNum].falloffRate = 1 / (20 * duration)
+  print "handle"
 
 class FalloffColor:
 
@@ -84,7 +88,7 @@ class LightArray:
         left = self.panelColors[i-1]
         leftColor = (left.r, left.g, left.b, left.falloffRate)
       if i == NUM_PANELS - 1:
-        rightColor = (0, 0, BASE_COLOR, 1)
+        rightColor = (0, 0, 255, 1)
       else:
         right = self.panelColors[i+1]
         rightColor = (right.r, right.g, right.b, right.falloffRate)
@@ -103,8 +107,14 @@ class LightArray:
 
     self.lastTime = currentTime
 
-def sendLightsToBridge(lightarray):
-  pass
+def sendLightsToBridge(lightarray, panels):
+  for i in xrange(len(panels)):
+    # send the color
+    color = lightarray.panelColors[i]
+    r = color.r / 255.0
+    g = color.g / 255.0
+    b = color.b / 255.0
+    panels[i].setRGBRaw(r, g, b)
   # TODO: send things using lumiverse
 
 def handle_stuff(server):
@@ -125,10 +135,22 @@ if __name__ == "__main__":
 
   lights = LightArray()
 
-  s = OSC.OSCServer(('127.0.0.1', 9001))
+  s = OSC.OSCServer(('localhost', 9001))
   s.addMsgHandler('/1', handler)
 
   print "Started server"
+
+  rig = L.Rig("/home/teacher/Lumiverse/PBridge.rig.json")
+
+  rig.init()
+  rig.run()
+
+  queryResults = []
+
+  for i in xrange(NUM_PANELS):
+    queryStr = "$panel=%d" % i
+    print queryStr
+    queryResults.append(rig.select(queryStr))
 
   reqT = RequestThread()
   reqT.daemon = True
@@ -137,5 +159,5 @@ if __name__ == "__main__":
   while True:
     time.sleep(0.01)
     lights.updateLights()
-    sendLightsToBridge(lights)
+    sendLightsToBridge(lights, queryResults)
 
