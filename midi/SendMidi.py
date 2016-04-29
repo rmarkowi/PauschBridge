@@ -8,6 +8,8 @@ import OSC
 import math
 
 numTracks = 0
+numChannels = 0
+minChannel = 100
 minTrack = 100
 
 client = None
@@ -88,9 +90,12 @@ class StreamerThread(Thread):
 def readNoteList(filename):
   global numTracks
   global minTrack
+  global numChannels
+  global minChannel
   notes = []
   numTracks = 0
   trackSet = set()
+  chanSet = set()
   with open(filename, 'r') as inFile:
     for line in inFile:
       numbers = map(lambda x: x.strip(), line.split(' '))
@@ -101,9 +106,12 @@ def readNoteList(filename):
       velocity = int(numbers[4])
       trackNum = int(numbers[5])
       minTrack = min(trackNum, minTrack)
+      minChannel = min(chanNum, minChannel)
       trackSet.add(trackNum)
+      chanSet.add(chanNum)
       notes.append(Note(pitch, chanNum, velocity, duration, startTime, trackNum))
   numTracks = len(trackSet)
+  numChannels = len(chanSet)
   print numTracks
   return notes
 
@@ -179,7 +187,7 @@ class MidiStreamer:
   # with the next notes in the MIDI file at each note's start time,
   # in real time.
   def streamNotesRealTime(self, callbackFn):
-    if self.streamingThread is None:
+    if self.streamingThread is None or self.streamingThread.done:
       self.streamingThread = StreamerThread(self.notes, callbackFn)
       # Set this so we can kill it with ctrl-C in case of emergency
       self.streamingThread.daemon = True
@@ -196,6 +204,11 @@ if __name__ == "__main__":
     print "usage: python bridgemidi.py <midi file> <wait time> <address>"
     exit()
 
+
+  for i in reversed(range(5)):
+    print "%d..." % (i+1)
+    time.sleep(1)
+
   address = sys.argv[3]
 
   client = OSC.OSCClient()
@@ -207,9 +220,13 @@ if __name__ == "__main__":
   time.sleep(waitTime)
   filename = sys.argv[1]
 
+  print "Loading file..."
+
   # In order to use this stuff, first create a MidiStreamer
   # using the filename of the midi notelist you want to use
   streamer = MidiStreamer(filename)
+
+  print "Loaded file."
 
   """
   while True:
