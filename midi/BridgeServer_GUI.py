@@ -11,38 +11,11 @@ import math
 
 from viewer import Viewer
 
-from BridgeServer import FalloffColor, LightArray
-from BridgeServer import NUM_PANELS, LOWEST_NOTE, FALLOFF_RATE
+from ServerBase import FalloffColor, LightArray
+from ServerBase import NUM_PANELS, LOWEST_NOTE, FALLOFF_RATE
 
 view = None
 lights = None
-
-def handler(addr, tags, data, client_address):
-
-  r = data[0]
-  g = data[1]
-  b = data[2]
-  duration = data[3]
-  pitch = data[4]
-
-  """
-  pitch = data[0]
-  channelNumber = data[1]
-  duration = data[2]
-  startTime = data[3]
-  velocity = data[4]
-  trackNumber = data[5]
-  """
-
-  panelNum = pitch - LOWEST_NOTE
-
-  if panelNum < 0 or panelNum >= NUM_PANELS:
-    return
-
-  lights.panelColors[panelNum].r = r
-  lights.panelColors[panelNum].g = g
-  lights.panelColors[panelNum].b = b
-  lights.panelColors[panelNum].falloffRate = 1 / (10 * duration)
 
 def sendLightsToViewer(lightarray, view):
   for i in xrange(len(lightarray.panelColors)):
@@ -82,7 +55,7 @@ if __name__ == "__main__":
     pass
 
   s = OSC.OSCServer(('127.0.0.1', 5724))
-  s.addMsgHandler('/1', handler)
+  s.addMsgHandler('/1', lights.handler)
 
   print "Started server"
 
