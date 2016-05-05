@@ -1,0 +1,172 @@
+\documentclass[11pt]{article}
+
+\usepackage{etex}
+\usepackage{hyperref}
+\usepackage{texyousei}
+
+\lhead{15-467/667}
+\rhead{Assignment 3}
+
+\begin{document}
+
+\thispagestyle{empty}
+\maketitle{Pausch Bridge MIDI Visualizer}{Spring 2016, Group 3}
+
+\setlength{\leftmargini}{0.3in}
+
+\section{Abstract}
+
+This document describes a MIDI-based music visualizer that can be run
+on the Pausch Bridge. The lights on the bridge mimic the keys of a
+piano, with different pitches being mapped to corresponding positions
+along the length of the bridge.
+
+\section{Running the Project}
+
+\subsection{Dependencies}
+
+The project is in Python, and requires two additional Python
+libraries: \texttt{pysmf} and \texttt{pyOSC}. Additionally, the
+visualizer requires \texttt{PyOpenGL}. All of them can be installed
+through pip. (You may need to \texttt{pip install pyOSC --pre} if the
+problem with the version numbers hasn't been fixed yet.)
+
+\subsection{Overview and TLDR}
+
+The main project is contained in the \texttt{midi/} folder. Suppose we
+have a file \texttt{foo.mid}. If we want to turn it into a light show
+and view it using the local visualizer, we need to complete the
+following steps:
+
+\begin{enumerate}
+
+\item Convert \texttt{foo.mid} into \texttt{foo.mid.notelist}:
+  \texttt{python SongReader.py foo.mid}
+
+\item Start the server: \texttt{python BridgeServer\_GUI.py}
+
+\item Send the notes to the server: \texttt{python SendMidi.py
+  foo.mid.notelist 0 localhost}
+
+\item (Optional) Play an audio file that will be synced to the light
+  show.
+
+\end{enumerate}
+
+If we want to play \texttt{foo.mid} on the bridge instead of viewing
+it locally:
+
+\begin{enumerate}
+
+\item Convert the file as before.
+
+\item SSH to the bridge and start the server there: \texttt{python
+  BridgeServer.py}
+
+\item Either from your local computer, or from the bridge itself, send
+  the notes: \texttt{python SendMidi.py foo.mid.notelist 0
+    pbridge.adm.cs.cmu.edu}
+
+\item (Optional) Get some very loud speakers and sync your audio to
+  the show.
+
+\end{enumerate}
+
+\subsection{Converting MIDI}
+
+The MIDI standard is generally too messy to convert directly into
+lights on the bridge, so we convert it to an intermediary format
+\texttt{.notelist}, which strips out all of the cruft of typical MIDI
+files and leaves only basic information about notes, such as their
+times, pitches, and durations. The script \texttt{SongReader.py} will
+perform this conversion. It can be used with the command
+
+\begin{center}
+\texttt{python SongReader.py foo.mid}
+\end{center}
+
+where \texttt{foo.mid} is the MIDI file we want to convert. It will
+then create \texttt{foo.mid.notelist} in the same directory, which the
+rest of the system will be able to use.
+
+\subsection{Starting the Server}
+
+We provide two servers: one (\texttt{BridgeServer\_GUI.py}) that
+displays a visualizer on the local machine, which is useful for
+testing out different songs, and one (\texttt{BridgeServer.py}) that
+is meant to run on the bridge and interface with the lights. Neither
+of them take any command-line arguments, so they can be started by
+typing
+
+\begin{center}
+\texttt{python BridgeServer[\_GUI].py}
+\end{center}
+
+The GUI version will initialize itself on localhost by default, while
+the actual bridge server will initialize itself on
+\texttt{pbridge.adm.cs.cmu.edu}. The servers will only accept packets
+sent specifically to the address they are initialized on. Practically,
+this means that if you want to stream a light show from the bridge to
+itself, you can't send to localhost -- you have to send packets
+explicitly to \texttt{pbridge.adm.cs.cmu.edu}.
+
+\subsection{Streaming the Notes}
+
+Once the server is running either locally or on the bridge, you can
+begin sending the notes to the bridge. The script to do this is
+\texttt{SendMidi.py}, which can be used with the command:
+
+\begin{center}
+\texttt{python SendMidi.py <notelist> <wait time> <address>}
+\end{center}
+
+Here, \texttt{notelist} is the \texttt{.notelist} file we created in
+step 1, \texttt{wait time} is the time in seconds that we should wait
+before sending the first note, and \texttt{address} is the network
+address where the server is running. In particular, this address
+should be localhost if we are running the GUI server, and
+\texttt{pbridge.adm.cs.cmu.edu} if we are running the server on the
+bridge.
+
+The wait time is useful in case we want to sync the light show with an
+audio file (e.g. an mp3), but the audio file has some leading
+silence. By specifying a short delay, we could delay the start of the
+light show until the start of the actual audio, assuming that we start
+playing the song at the exact same time that we start running
+\texttt{SendMidi.py}. (However, the better solution is just to trim
+the audio file so that there isn't any leading silence.)
+
+So, if we want to use \texttt{foo.mid.notelist} as the light show and
+we already have the server running on the bridge, we would type
+\texttt{python SendMidi.py foo.mid.notelist 0
+  pbridge.adm.cs.cmu.edu}. If we simply wanted to preview the show on
+our own computer using the visualizer, we would type \texttt{python
+  SendMidi.py foo.mid.notelist 0 localhost}.
+
+Note that the script gives a 5 second countdown before starting the
+show. You can use this in case you need to start music manually at the
+right time.
+
+\subsection{Combined script}
+
+We have a small script \texttt{run.sh} that can sync the start of the
+show with the start of an mp3 file. The syntax for this script is
+
+\begin{center}
+\texttt{./run.sh <notelist file> <mp3 file> <address> <midi delay>
+  <mp3 delay>}
+\end{center}
+
+The first three arguments are self-explanatory. The MIDI delay is the
+time in seconds to delay before starting to send the MIDI, in case the
+MIDI begins immediately but the mp3 has leading silence. The mp3 delay
+is the reverse -- the time to delay before starting to play the mp3,
+in case the mp3 begins immediately but the MIDI has some leading
+silence. (Again, it's better just to edit both so that they start
+immediately. If you do, then both arguments can just be 0.)
+
+\section{Conclusion}
+
+If you have questions, email Chris at \texttt{christoy@cs.cmu.edu}.
+
+\end{document}
