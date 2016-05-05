@@ -117,3 +117,9 @@ class RequestThread(Thread):
     while True:
       time.sleep(0.01)
       handle_stuff(s)
+
+if __name__ == "__main__":
+  print "This program doesn't do anything."
+  print "Run either BridgeServer_GUI.py if you want to see the visualizer"
+  print "on your local computer, or run BridgeServer.py if you are on the"
+  print "bridge and want to run a show."

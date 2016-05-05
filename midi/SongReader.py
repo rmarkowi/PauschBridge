@@ -97,7 +97,7 @@ def writeNotes(noteList, numTracks, filename):
 # Look here for example usage.
 if __name__ == "__main__":
   if len(sys.argv) != 2:
-    print "usage: python bridgemidi.py <midi file>"
+    print "usage: python SongReader.py <midi file>"
     exit()
 
   filename = sys.argv[1]
