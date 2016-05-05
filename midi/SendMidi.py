@@ -201,7 +201,7 @@ class MidiStreamer:
 # Look here for example usage.
 if __name__ == "__main__":
   if len(sys.argv) != 4:
-    print "usage: python bridgemidi.py <midi file> <wait time> <address>"
+    print "usage: python SendMidi.py <notelist file> <wait time> <address>"
     exit()
 
 

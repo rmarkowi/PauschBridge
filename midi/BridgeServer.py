@@ -5,10 +5,10 @@ import time
 import OSC
 import math
 
-import lumiversepython as L
+#import lumiversepython as L
 
 
-NUM_PANELS = 58
+NUM_PANELS = 59
 LOWEST_NOTE = 30
 FALLOFF_RATE = 3
 BASE_COLOR = 50
@@ -41,7 +41,6 @@ def handler(addr, tags, data, client_address):
   lights.panelColors[panelNum].g = g
   lights.panelColors[panelNum].b = b
   lights.panelColors[panelNum].falloffRate = 1 / (20 * duration)
-  print "handle"
 
 class FalloffColor:
 
@@ -149,7 +148,6 @@ if __name__ == "__main__":
 
   for i in xrange(NUM_PANELS):
     queryStr = "$panel=%d" % i
-    print queryStr
     queryResults.append(rig.select(queryStr))
 
   reqT = RequestThread()
